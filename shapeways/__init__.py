@@ -7,46 +7,14 @@ import base64
 # todo: logging with "logging" module
 # todo: custom exception classes
 
-class Requestor():
-    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, api_base = 'http://api.shapeways.com'):
-        self.session = rauth.OAuth1Session(
-            consumer_key = consumer_key,
-            consumer_secret = consumer_secret,
-            access_token = access_token,
-            access_token_secret = access_token_secret
-        )
-        
-        self.api_base = api_base
-    
-    @classmethod
-    def filter_none(data):
-        filtered_data = {k: v for k, v in data.items() if v != None}
-        return filtered_data
-        
-    def get(self, path, data={}):
-        response = self.session.get(self.api_base + path, data=filter_none(data))
-        json_data = json.loads(response.content)
-        return json_data
-
-    def delete(self, path, data={}):
-        response = self.session.delete(self.api_base + path, data=filter_none(data))
-        json_data = json.loads(response.content)
-        return json_data    
-
-    def post(self, path, data):    
-        headers = {'Content-Type': 'application/json'}
-        response = self.session.post(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
-        json_data = json.loads(response.content)
-        return json_data
-
-    def put(self, path, data):    
-        headers = {'Content-Type': 'application/json'}
-        response = self.session.put(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
-        json_data = json.loads(response.content)
-        return json_data
-
 class API():
+    '''
+    Shapeways API methods.
+    '''
     def __init__(self, requestor):
+        '''
+        requestor is a Requestor object set up to make requests for a particular application and user
+        '''
         self.requestor = requestor
     
     ## API Info
@@ -154,24 +122,66 @@ class API():
         
         return self.requestor.post('/price/v1', data)
 
-class OAuthDance():
-    def __init__(self, consumer_key, consumer_secret, api_base = 'http://api.shapeways.com'):
+class Requestor():
+    '''
+    Provides underlying request methods that understand Shapeways API conventions and include OAuth information in each request.
+    '''
+    def __init__(self, consumer_key, access_token, api_base = 'http://api.shapeways.com'):
+        '''
+        consumer_key is a (public, secret) tuple of your application's consumer key
+        access_token is a (public, secret) tuple of the access key you got for your application to access a particular user's account
+        '''
+        self.session = rauth.OAuth1Session(
+            consumer_key = consumer_key[0],
+            consumer_secret = consumer_key[1],
+            access_token = access_token[0],
+            access_token_secret = access_token[1]
+        )
+        
         self.api_base = api_base
+    
+    @classmethod
+    def filter_none(data):
+        filtered_data = {k: v for k, v in data.items() if v != None}
+        return filtered_data
         
-        ## The Dance to get Access Tokens
-        
-        # 1. __init__: Start with these consumer keys for our application
-        self.consumer_key = consumer_key
-        self.consumer_key_secret = consumer_key_secret
-        
-        # 2. get_authorize_url: Generate request tokens and generate a link for the user to authorize us.  We must remember the request tokens.
-        self.request_token = None
+    def get(self, path, data={}):
+        response = self.session.get(self.api_base + path, data=filter_none(data))
+        json_data = json.loads(response.content)
+        return json_data
 
-        # 3. get_access_token: Get a verifier back from the user, combine with our request token and get these access tokens for the user.  Done!
-        
+    def delete(self, path, data={}):
+        response = self.session.delete(self.api_base + path, data=filter_none(data))
+        json_data = json.loads(response.content)
+        return json_data    
+
+    def post(self, path, data):    
+        headers = {'Content-Type': 'application/json'}
+        response = self.session.post(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
+        json_data = json.loads(response.content)
+        return json_data
+
+    def put(self, path, data):    
+        headers = {'Content-Type': 'application/json'}
+        response = self.session.put(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
+        json_data = json.loads(response.content)
+        return json_data
+
+class OAuthDance():
+    '''
+    OAuth Dance
+    
+    1. Call get_request to get request keys and the URL the user must visit to authorize the application
+    2. Call get_access to get access keys.
+    '''
+    
+    def __init__(self, consumer_key, api_base = 'http://api.shapeways.com'):
+        '''
+        consumer_key is the (public,secret) consumer key for your application, provided by Shapeways
+        '''
         self.service = rauth.OAuth1Service(
-            consumer_key = self.consumer_key,
-            consumer_secret = self.consumer_secret,
+            consumer_key = consumer_key[0],
+            consumer_secret = consumer_key[1],
             name = 'shapeways',
             access_token_url = api_base + '/oauth1/access_token/v1',
             authorize_url = api_base + '/login',
@@ -179,8 +189,10 @@ class OAuthDance():
             base_url = api_base,
         )
     
-    def get_authorize_url(self, request_token):
-        def get_request_token_decoder(self, contents):
+    def get_request(self):
+        '''Get a request token and URL for user authorization.  You must save the request token for use when calling get_access.'''
+        
+        def decoder(contents):
             '''Needed because Shapeways request_token groups oauth_token with the authorization URL.'''
             fields = urlparse.parse_qs(contents)
             authentication_url = urlparse.urlparse(fields['authentication_url'][0])
@@ -195,43 +207,10 @@ class OAuthDance():
             
             return result
         
-        # Remember request token.
-        self.request_token = self.service.get_request_token(decoder = get_request_token_decoder)
+        request_token = self.service.get_request_token(decoder = decoder)
         
-        return self.service.get_authorize_url(self.request_token[0])
+        return (request_token, self.service.get_authorize_url(request_token[0]))
     
-    def get_access_token(self, verifier):
-        if not self.request_token:
-            raise Exception("You must first call get_authorize_url to get request tokens and authorize URL for user to visit.")
-            
-        return self.service.get_access_token(self.request_token[0], self.request_token[1], data = {'oauth_verifier': verifier})
-    
-def run_oauth():
-    print "consumer_key:"
-    shapeways.consumer_key = raw_input()
-    print "consumer_key_secret:"
-    shapeways.consumer_secret = raw_input()
-
-    s = shapeways.get_oauth_service()
-    rt = s.get_request_token(decoder = shapeways.get_request_token_decoder)
-
-    print "Browse to:"
-    print s.get_authorize_url(rt[0])
-
-    print "verifier:"
-    verifier = raw_input()
-
-    (shapeways.access_token, shapeways.access_token_secret) = s.get_access_token(rt[0], rt[1], data = {'oauth_verifier': verifier})
-
-    # Test session to see if this worked
-    r = shapeways.get_oauth_session()
-    r.get(shapeways.api_base + '/api/v1')
-    
-    if r.status_code != 200:
-        raise Exception(r.content)
-
-    print "Session established"
-    print "shapeways.consumer_key = " + shapeways.consumer_key
-    print "shapeways.consumer_secret = " + shapeways.consumer_secret
-    print "shapeways.access_token = " + shapeways.access_token
-    print "shapeways.access_token_secret = " + shapeways.access_token_secret
+    def get_access(self, request_token, verifier):
+        '''Use request token and user provided verifier to get the acccess token.  You must save the access token for use when making API requests on behalf of the user.'''        
+        return self.service.get_access_token(request_token[0], request_token[1], data = {'oauth_verifier': verifier})
