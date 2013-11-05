@@ -22,6 +22,11 @@ def get_session():
 # And this was the request token (not needed once you have access token)
 # ('b1aad5af593ab9f3c031ffa7c9a7742190832088', '249a76bda58908a1943d420180a6cc7b017d444b')
 
+def run_price():
+    set_keys()
+    session = shapeways.get_oauth_session()
+    return shapeways.get_price(session, 0.000001, 0.0008, (0, 0, 0), (0.001, 0.001, 0.001))
+
 def run_oauth():
     print "consumer_key:"
     shapeways.consumer_key = raw_input()
@@ -43,7 +48,7 @@ def run_oauth():
     r = shapeways.get_oauth_session()
     r.get(shapeways.api_base + '/api/v1')
     
-    if r.status_code not 200:
+    if r.status_code != 200:
         raise Exception(r.content)
 
     print "Session established"
@@ -51,3 +56,5 @@ def run_oauth():
     print "shapeways.consumer_secret = " + shapeways.consumer_secret
     print "shapeways.access_token = " + shapeways.access_token
     print "shapeways.access_token_secret = " + shapeways.access_token_secret
+    
+set_keys()

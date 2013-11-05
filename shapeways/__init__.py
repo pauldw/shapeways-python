@@ -1,23 +1,92 @@
 ## Imports
-import requests
 import rauth
 import json
 import urlparse
 
 # todo: logging with "logging" module
 # todo: custom exception classes
-# todo: configuration variables (global) for api key and base URL
 
 ## Configuration
-# TODO: read these from non-commitable config somewhere
-# Per app keys
-consumer_key = None #'9a894be3afac00b2899b8008ee73dabdd66c5c62'
-consumer_secret = None #'a9f9cf4ca0f3bb8d0b279a35b374e07262dc6f16'
-# Per user keys
-access_token = None #'b1aad5af593ab9f3c031ffa7c9a7742190832088'
-access_token_secret = None #'249a76bda58908a1943d420180a6cc7b017d444b'
+# App keys
+consumer_key = None
+consumer_secret = None
+# User keys
+access_token = None
+access_token_secret = None
 # URL
 api_base = 'http://api.shapeways.com'
+
+## Objects
+# API 
+# Cart
+# Material
+# Model
+# Printer
+# Price
+# Category
+
+def do_get(path, data={}):
+    response = get_session().get(api_base + path, data=data)
+    json_data = json.loads(response.content)
+    return json_data
+
+def do_post(path, data):    
+    headers = {'Content-Type': 'application/json'}
+    response = get_session().post(api_base + path, data = json.dumps(data), headers = headers)
+    json_data = json.loads(response.content)
+    return json_data
+    
+def get_session():
+    if not consumer_key or not consumer_secret or not access_token or not access_token_secret:
+        raise Exception("access keys not set, please see configuration guide")
+
+    return get_oauth_session()
+
+def get_api_info():
+    return do_get('/api/v1')    
+
+def get_cart():
+    return do_get('/orders/cart/v1')
+
+def add_to_cart(model_id, material_id, quantity):
+    data = {
+        'modelId': model_id,
+        'materialId': material_id,
+        'quantity': quantity
+    }
+    
+    return do_post('/orders/cart/v1', data)
+    
+def get_materials():
+    return do_get('/materials/v1')
+
+def get_material(id):
+    return do_get('/materials/' + str(id) + '/v1') 
+
+def get_models(page=None):
+    data = {}
+    
+    if page:
+        data['page'] = page
+    
+    return do_get('/models/v1', data)
+    
+def get_price(volume, area, point_min, point_max, materials=None):
+    (x_min, y_min, z_min) = point_min
+    (x_max, y_max, z_max) = point_max
+    
+    data = {
+        'volume': volume,
+        'area': area,
+        #'x_bound_min': x_min,
+        #'x_bound_max': x_max,
+        #'y_bound_min': y_min,
+        #'y_bound_max': y_max,
+        #'z_bound_min': z_min,
+        #'z_bound_max': z_max
+    }
+    
+    return do_post('/price/v1', data)
 
 def get_request_token_decoder(contents):
     '''Needed because Shapeways request_token groups oauth_token with the authorization URL.'''
