@@ -104,6 +104,34 @@ class API():
         
         return self.requestor.post('/models/' + str(id) + '/files/v1', data)
     
+    def get_model_file(self, id, version, include_file=None):
+        data = {
+            'modelId': id,
+            'fileVersion': version,
+            'file': include_file
+        }
+        
+        return self.requestor.get('/models/' + str(id) + '/files/' + str(version) + '/v1', data)    
+
+    def add_model_photo(self, id, file, filename, title=None, description=None, material_id=None, is_default=None):
+        data = {
+            'modelId': id,
+            'file': base64.b64encode(file.read()),
+            'title': title,
+            'description': description,
+            'materialId': material_id,
+            'isDefault': is_default
+        }
+        
+        return self.requestor.post('/models/' + str(id) + '/photos/v1', data)
+
+    ## Printers
+    def get_printers(self):
+        return self.requestor.get('/printers/v1')
+
+    def get_printer(self, id):
+        return self.requestor.get('/printers/' + str(id) + '/v1') 
+    
     ## Pricing
     def get_price(self, volume, area, point_min, point_max, materials=None):
         (x_min, y_min, z_min) = point_min
@@ -120,8 +148,16 @@ class API():
             'zBoundMax': z_max
         }
         
-        return self.requestor.post('/price/v1', data)
+        return self.requestor.post('/price/v1', data)        
 
+    ## Categories
+    def get_categories(self):
+        return self.requestor.get('/categories/v1')
+
+    def get_category(self, id):
+        return self.requestor.get('/categories/' + str(id) + '/v1') 
+
+        
 class Requestor():
     '''
     Provides underlying request methods that understand Shapeways API conventions and include OAuth information in each request.
