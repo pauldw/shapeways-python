@@ -2,6 +2,7 @@
 import rauth
 import json
 import urlparse
+import base64
 
 # todo: logging with "logging" module
 # todo: custom exception classes
@@ -25,14 +26,29 @@ api_base = 'http://api.shapeways.com'
 # Price
 # Category
 
+def filter_none(data):
+    filtered_data = {k: v for k, v in data.items() if v != None}
+    return filtered_data
+
 def do_get(path, data={}):
-    response = get_session().get(api_base + path, data=data)
+    response = get_session().get(api_base + path, data=filter_none(data))
     json_data = json.loads(response.content)
     return json_data
 
+def do_delete(path, data={}):
+    response = get_session().delete(api_base + path, data=filter_none(data))
+    json_data = json.loads(response.content)
+    return json_data    
+    
 def do_post(path, data):    
     headers = {'Content-Type': 'application/json'}
-    response = get_session().post(api_base + path, data = json.dumps(data), headers = headers)
+    response = get_session().post(api_base + path, data = json.dumps(filter_none(data)), headers = headers)
+    json_data = json.loads(response.content)
+    return json_data
+
+def do_put(path, data):    
+    headers = {'Content-Type': 'application/json'}
+    response = get_session().put(api_base + path, data = json.dumps(filter_none(data)), headers = headers)
     json_data = json.loads(response.content)
     return json_data
     
@@ -48,7 +64,7 @@ def get_api_info():
 def get_cart():
     return do_get('/orders/cart/v1')
 
-def add_to_cart(model_id, material_id, quantity):
+def add_to_cart(model_id, material_id=None, quantity=None):
     data = {
         'modelId': model_id,
         'materialId': material_id,
@@ -64,12 +80,66 @@ def get_material(id):
     return do_get('/materials/' + str(id) + '/v1') 
 
 def get_models(page=None):
-    data = {}
-    
-    if page:
-        data['page'] = page
+    data = {
+        'page': page
+    }
     
     return do_get('/models/v1', data)
+
+def get_model(id):
+    return do_get('/models/' + str(id) + '/v1') 
+   
+def get_model_info(id):
+    return do_get('/models/' + str(id) + '/info/v1') 
+
+def add_model(file, filename, scale=None, title=None, description=None, is_public=None, is_for_sale=None, is_downloadable=None, tags=None, materials=None, default_material_id=None, categories=None):
+    data = {
+        'file': base64.b64encode(file.read()),
+        'fileName': filename,
+        'uploadScale': scale,
+        'hasRightsToModel': True,
+        'acceptTermsAndConditions': True,
+        'title': title,
+        'description': description,
+        'isPublic': is_public,
+        'isForSale': is_for_sale,
+        'isDownloadable': is_downloadable,
+        'tags': tags,
+        'materials': materials,
+        'defaultMaterialId': default_material_id,
+        'categories': categories
+    }
+    
+    return do_post('/models/v1', data)
+
+def delete_model(id):
+    return do_delete('/models/' + str(id) + '/v1')     
+
+def update_model_info(id, title=None, description=None, is_public=None, is_for_sale=None, is_downloadable=None, tags=None, materials=None, default_material_id=None, categories=None):
+    data = {
+        'title': title,
+        'description': description,
+        'isPublic': is_public,
+        'isForSale': is_for_sale,
+        'isDownloadable': is_downloadable,
+        'tags': tags,
+        'materials': materials,
+        'defaultMaterialId': default_material_id,
+        'categories': categories
+    }
+    
+    return do_put('/models/' + str(id) + '/info/v1', data)
+
+def update_model_file(id, file, filename, scale=None):
+    data = {
+        'file': base64.b64encode(file.read()),
+        'fileName': filename,
+        'uploadScale': scale,
+        'hasRightsToModel': True,
+        'acceptTermsAndConditions': True
+    }
+    
+    return do_post('/models/' + str(id) + '/files/v1', data)
     
 def get_price(volume, area, point_min, point_max, materials=None):
     (x_min, y_min, z_min) = point_min
@@ -78,12 +148,12 @@ def get_price(volume, area, point_min, point_max, materials=None):
     data = {
         'volume': volume,
         'area': area,
-        #'x_bound_min': x_min,
-        #'x_bound_max': x_max,
-        #'y_bound_min': y_min,
-        #'y_bound_max': y_max,
-        #'z_bound_min': z_min,
-        #'z_bound_max': z_max
+        'xBoundMin': x_min,
+        'xBoundMax': x_max,
+        'yBoundMin': y_min,
+        'yBoundMax': y_max,
+        'zBoundMin': z_min,
+        'zBoundMax': z_max
     }
     
     return do_post('/price/v1', data)
