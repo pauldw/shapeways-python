@@ -4,8 +4,9 @@ import json
 import urlparse
 import base64
 
-# todo: logging with "logging" module
-# todo: custom exception classes
+# TODO: logging with "logging" module
+# TODO: custom exception classes
+# TODO: docstrings for each API method that repeat what's in the HTTP docs
 
 class API():
     '''
@@ -56,6 +57,9 @@ class API():
         return self.requestor.get('/models/' + str(id) + '/info/v1') 
 
     def add_model(self, file, filename, scale=None, title=None, description=None, is_public=None, is_for_sale=None, is_downloadable=None, tags=None, materials=None, default_material_id=None, categories=None):
+        '''
+        scale is upload 'scale' in meters.  1 means that 1 model unit equals 1 meter.  0.001 means that 1 model unit equals 1 mm.
+        '''
         data = {
             'file': base64.b64encode(file.read()),
             'fileName': filename,
