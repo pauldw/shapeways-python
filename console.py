@@ -1,10 +1,11 @@
 import shapeways
 
-# For your sample app
-consumer_key = ('9a894be3afac00b2899b8008ee73dabdd66c5c62', 'a9f9cf4ca0f3bb8d0b279a35b374e07262dc6f16')
-
-# For pwalker
-access_token = ('59e8b4bf1bb3d7d8955207f98e2fed1d31dd4127', '18bcb77e16a5dc70bda95a0b0b14e9297eccd572')
+# Get keys from the environment
+try:
+    consumer_key = (os.environ['SW_CONSUMER_KEY'], os.environ['SW_CONSUMER_KEY_SECRET'])
+    access_token = (os.environ['SW_ACCESS_TOKEN'], os.environ['SW_ACCESS_TOKEN_SECRET'])
+except KeyError, e:
+    sys.stderr.write("Please set SW_CONSUMER_KEY, SW_CONSUMER_KEY_SECRET, SW_ACCESS_TOKEN and SW_ACCESS_TOKEN_SECRET environment variables.\n")
 
 def run_price():
     session = shapeways.get_oauth_session()
