@@ -11,11 +11,11 @@ class API():
     '''
     Shapeways API methods.
     '''
-    def __init__(self, requestor):
+    def __init__(self, consumer_key, access_token):
         '''
         requestor is a Requestor object set up to make requests for a particular application and user
         '''
-        self.requestor = requestor
+        self.requestor = Requestor(consumer_key, access_token)
     
     ## API Info
     def get_api_info(self):
@@ -176,30 +176,29 @@ class Requestor():
         
         self.api_base = api_base
     
-    @classmethod
-    def filter_none(data):
+    def filter_none(self, data):
         filtered_data = {k: v for k, v in data.items() if v != None}
         return filtered_data
         
     def get(self, path, data={}):
-        response = self.session.get(self.api_base + path, data=filter_none(data))
+        response = self.session.get(self.api_base + path, data=self.filter_none(data))
         json_data = json.loads(response.content)
         return json_data
 
     def delete(self, path, data={}):
-        response = self.session.delete(self.api_base + path, data=filter_none(data))
+        response = self.session.delete(self.api_base + path, data=self.filter_none(data))
         json_data = json.loads(response.content)
         return json_data    
 
     def post(self, path, data):    
         headers = {'Content-Type': 'application/json'}
-        response = self.session.post(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
+        response = self.session.post(self.api_base + path, data = json.dumps(self.filter_none(data)), headers = headers)
         json_data = json.loads(response.content)
         return json_data
 
     def put(self, path, data):    
         headers = {'Content-Type': 'application/json'}
-        response = self.session.put(self.api_base + path, data = json.dumps(filter_none(data)), headers = headers)
+        response = self.session.put(self.api_base + path, data = json.dumps(self.filter_none(data)), headers = headers)
         json_data = json.loads(response.content)
         return json_data
 
