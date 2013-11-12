@@ -38,10 +38,10 @@ def get_keys(filename='console_oauth_keys.json'):
         create_keys_interactive(filename)
 
     keys = json.load(open(filename))
-    consumer_key = keys['consumer_key']
-    access_token = keys['access_token']
     
-    return (consumer_key, access_token)
+    r = ((keys['consumer_key'], keys['consumer_key_secret']), (keys['access_token'], keys['access_token_secret']))
+    
+    return r
 
 def get_api():
     keys = get_keys()
