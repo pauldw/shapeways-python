@@ -3,6 +3,7 @@ import shapeways
 import json
 import sys
 import os
+import code
 
 def input(prompt):
     sys.stdout.write(prompt + ": ")
@@ -48,3 +49,4 @@ def get_api():
     return shapeways.API(keys[0], keys[1])
 
 api = get_api()
+code.interact(banner="Shapeways console.  Use the 'api' object for API access.", local=locals())
