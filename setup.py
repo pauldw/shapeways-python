@@ -5,7 +5,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     sys.exit(1)
 
 setup(name='shapeways',
-      version='0.1.4',
+      version='0.1.5',
       description='Shapeways python bindings',
       author='Paul Walker',
       author_email='pwalker@fvml.ca',
