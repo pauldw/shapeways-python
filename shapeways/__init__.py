@@ -8,23 +8,6 @@ import base64
 # TODO: custom exception classes
 # TODO: docstrings for each API method that repeat what's in the HTTP docs
 
-class ModelMaterials():
-    '''Represents a set of materials that are paired with a model.'''
-    def __init__(self, markup=0.00, is_active=True):
-        self.id = id
-        self.markup = markup
-        self.is_active = is_active
-        
-    def get_dict(self):
-        '''Returns a dictonary representation that can be used in API requests.'''
-        return {
-            str(self.id): {
-                'materialId': str(self.id),
-                'markup': self.markup,
-                'isActive': self.is_active
-            }
-        }
-
 class API():
     '''Shapeways API methods.'''
     def __init__(self, consumer_key, access_token):
