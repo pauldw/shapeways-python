@@ -188,7 +188,7 @@ class Requestor():
         '''Turn response into JSON and raise exception on non-success result code.'''
         json_data = json.loads(response.content)
         
-        if json_data['result'] not 'success':
+        if json_data['result'] != 'success':
             raise Exception("Got %s result from server." % json_data['result'])
         
         return json_data
