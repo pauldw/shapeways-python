@@ -184,27 +184,32 @@ class Requestor():
         filtered_data = {k: v for k, v in data.items() if v != None}
         return filtered_data
         
+    def parse_response(self, response):
+        '''Turn response into JSON and raise exception on non-success result code.'''
+        json_data = json.loads(response.content)
+        
+        if json_data['result'] not 'success':
+            raise Exception("Got %s result from server." % json_data['result'])
+        
+        return json_data
+        
     def get(self, path, data={}):
         response = self.session.get(self.api_base + path, data=self.filter_none(data))
-        json_data = json.loads(response.content)
-        return json_data
+        return self.parse_response(response)
 
     def delete(self, path, data={}):
         response = self.session.delete(self.api_base + path, data=self.filter_none(data))
-        json_data = json.loads(response.content)
-        return json_data    
+        return self.parse_response(response)
 
     def post(self, path, data):    
         headers = {'Content-Type': 'application/json'}
         response = self.session.post(self.api_base + path, data = json.dumps(self.filter_none(data)), headers = headers)
-        json_data = json.loads(response.content)
-        return json_data
+        return self.parse_response(response)
 
     def put(self, path, data):    
         headers = {'Content-Type': 'application/json'}
         response = self.session.put(self.api_base + path, data = json.dumps(self.filter_none(data)), headers = headers)
-        json_data = json.loads(response.content)
-        return json_data
+        return self.parse_response(response)
 
 class OAuthDance():
     '''
