@@ -8,14 +8,27 @@ import base64
 # TODO: custom exception classes
 # TODO: docstrings for each API method that repeat what's in the HTTP docs
 
+class ModelMaterials():
+    '''Represents a set of materials that are paired with a model.'''
+    def __init__(self, markup=0.00, is_active=True):
+        self.id = id
+        self.markup = markup
+        self.is_active = is_active
+        
+    def get_dict(self):
+        '''Returns a dictonary representation that can be used in API requests.'''
+        return {
+            str(self.id): {
+                'materialId': str(self.id),
+                'markup': self.markup,
+                'isActive': self.is_active
+            }
+        }
+
 class API():
-    '''
-    Shapeways API methods.
-    '''
+    '''Shapeways API methods.'''
     def __init__(self, consumer_key, access_token):
-        '''
-        requestor is a Requestor object set up to make requests for a particular application and user
-        '''
+        '''requestor is a Requestor object set up to make requests for a particular application and user'''
         self.requestor = Requestor(consumer_key, access_token)
     
     ## API Info
@@ -40,8 +53,8 @@ class API():
         return self.requestor.get('/materials/v1')
 
     def get_material(self, id):
-        return self.requestor.get('/materials/' + str(id) + '/v1') 
-
+        return self.requestor.get('/materials/' + str(id) + '/v1')
+        
     ## Models
     def get_models(self, page=None):
         data = {
@@ -56,10 +69,25 @@ class API():
     def get_model_info(self, id):
         return self.requestor.get('/models/' + str(id) + '/info/v1') 
 
+    def get_material_set(self, materials):
+        '''Helper function to build material sets when adding/updating models.'''
+        if materials:
+            base_set = {}
+            for id in self.get_materials()['materials'].keys():
+                base_set[int(id)] = {'materialId': int(id), 'isActive': False, 'markup': 0.00}
+            for (id, markup) in materials:
+                base_set[id]['isActive'] = True
+                base_set[id]['markup'] = markup
+            return base_set
+        else:
+            return None    
+        
     def add_model(self, file, filename, scale=None, title=None, description=None, is_public=None, is_for_sale=None, is_downloadable=None, tags=None, materials=None, default_material_id=None, categories=None):
         '''
-        scale is upload 'scale' in meters.  1 means that 1 model unit equals 1 meter.  0.001 means that 1 model unit equals 1 mm.
+        scale -- upload 'scale' in meters.  1 means that 1 model unit equals 1 meter.  0.001 means that 1 model unit equals 1 mm.  Defaults to 1 meter.
+        materials -- A list of [(material_id, markup), ...] of materials you want to include.  Markup is a float in dollars.  Default is to include all materials at 0.00 markup.
         '''
+        
         data = {
             'file': base64.b64encode(file.read()),
             'fileName': filename,
@@ -72,7 +100,7 @@ class API():
             'isForSale': is_for_sale,
             'isDownloadable': is_downloadable,
             'tags': tags,
-            'materials': materials,
+            'materials': self.get_material_set(materials),
             'defaultMaterialId': default_material_id,
             'categories': categories
         }
@@ -83,6 +111,7 @@ class API():
         return self.requestor.delete('/models/' + str(id) + '/v1')     
 
     def update_model_info(self, id, title=None, description=None, is_public=None, is_for_sale=None, is_downloadable=None, tags=None, materials=None, default_material_id=None, categories=None):
+        '''Arguments are similar to add_model.'''
         data = {
             'title': title,
             'description': description,
@@ -90,7 +119,7 @@ class API():
             'isForSale': is_for_sale,
             'isDownloadable': is_downloadable,
             'tags': tags,
-            'materials': materials,
+            'materials': self.get_material_set(materials),
             'defaultMaterialId': default_material_id,
             'categories': categories
         }
