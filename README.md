@@ -1,12 +1,11 @@
-Unofficial Shapeways Python Bindings
-====================================
-Modeled after the stripe-python client at https://github.com/stripe/stripe-python .
-Official Shapeways reference clients are at https://github.com/Shapeways/shapeways-api .
+Installation
+=====
+To install from PyPI use `pip install shapeways`
+To install from source use `python setup.py install`
 
-Configuration
-============
-1. Create an application at https://developers.shapeways.com/manage-apps .  You'll have to create a Shapeways account if you do not already have one.
-2. Set shapeways.consumer_key and shapeways.consumer_secret to the given values
+Usage
+=====
+Try out a developer console by running `python -m shapeways` .  This will guide you through the initial OAuth process and provide an `api` object for experimentation.
 
 Documentation
 =============
@@ -14,5 +13,8 @@ Please see http://developers.shapeways.com/ for official API documentation.
 
 Dependencies
 ============
-http://www.python-requests.org/en/latest/
-https://rauth.readthedocs.org/en/latest/
+Uses https://rauth.readthedocs.org/en/latest/ for OAuth handling.
+
+References
+==========
+Inspired by the stripe-python client at https://github.com/stripe/stripe-python .
