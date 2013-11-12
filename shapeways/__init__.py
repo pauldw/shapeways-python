@@ -4,10 +4,6 @@ import json
 import urlparse
 import base64
 
-# TODO: logging with "logging" module
-# TODO: custom exception classes
-# TODO: docstrings for each API method that repeat what's in the HTTP docs
-
 class API():
     '''Shapeways API methods.'''
     def __init__(self, consumer_key, access_token):
