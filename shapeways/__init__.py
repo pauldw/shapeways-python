@@ -49,7 +49,11 @@ class API():
         return self.requestor.get('/models/' + str(id) + '/info/v1') 
 
     def get_material_set(self, materials):
-        '''Helper function to build material sets when adding/updating models.'''
+        '''
+        Helper function to generate a list of materials that explicitly excludes all materials except those named.
+        materials -- materials list in the format [(material_id, markup), ...], or None
+        Passes None straight through to help with defaults.
+        '''
         if materials:
             base_set = {}
             for id in self.get_materials()['materials'].keys():
@@ -146,6 +150,7 @@ class API():
     
     ## Pricing
     def get_price(self, volume, area, point_min, point_max, materials=None):
+        '''point_min and point_max are (x, y, z) coordinate tuples for the min and max corners of a bounding box around the model'''
         (x_min, y_min, z_min) = point_min
         (x_max, y_max, z_max) = point_max
         
