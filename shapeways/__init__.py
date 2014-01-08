@@ -35,12 +35,13 @@ class API():
         return self.requestor.get('/materials/' + str(id) + '/v1')
         
     ## Models
-    def get_models(self, page=None):
-        data = {
+    def get_models(self, page=1):
+        '''Pages contain up to 36 models.'''
+        params = {
             'page': page
         }
         
-        return self.requestor.get('/models/v1', data)
+        return self.requestor.get('/models/v1', params)
 
     def get_model(self, id):
         return self.requestor.get('/models/' + str(id) + '/v1') 
@@ -120,14 +121,12 @@ class API():
         
         return self.requestor.post('/models/' + str(id) + '/files/v1', data)
     
-    def get_model_file(self, id, version, include_file=None):
-        data = {
-            'modelId': id,
-            'fileVersion': version,
-            'file': include_file
+    def get_model_file(self, id, version, include_file=False):
+        params = {
+            'file': {True: 1, False: 0}[include_file]
         }
         
-        return self.requestor.get('/models/' + str(id) + '/files/' + str(version) + '/v1', data)    
+        return self.requestor.get('/models/' + str(id) + '/files/' + str(version) + '/v1', params)    
 
     def add_model_photo(self, id, file, filename, title=None, description=None, material_id=None, is_default=None):
         data = {
@@ -206,8 +205,11 @@ class Requestor():
         
         return json_data
         
-    def get(self, path, data={}):
-        response = self.session.get(self.api_base + path, data=self.filter_none(data))
+    def get(self, path, params={}):
+        '''Params gets included as a query string.  It's important to use this
+        instead of including the query string in the path so that the query
+        string is properly signed by the OAuth handler.'''
+        response = self.session.get(self.api_base + path, params=params)
         return self.parse_response(response)
 
     def delete(self, path, data={}):
