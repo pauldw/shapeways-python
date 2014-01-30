@@ -1,12 +1,12 @@
 Installation
 =====
-To install from source use `python setup.py install`
+To install from source use `python setup.py install`, this will install the `shapeways2` module.
 
-Please note the PyPI package `shapeways` is now owned by Shapeways and is not this project.
+Please note the PyPI package `shapeways` (module name `shapeways` as well) is not this project.
 
 Usage
 =====
-Try out a developer console by running `python -m shapeways` .  This will guide you through the initial OAuth process and provide an `api` object for experimentation.
+Try out a developer console by running `python -m shapeways2` .  This will guide you through the initial OAuth process and provide an `api` object for experimentation.
 
 Documentation
 =============
