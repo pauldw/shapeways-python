@@ -1,7 +1,8 @@
 Installation
 =====
-To install from PyPI use `pip install shapeways`
 To install from source use `python setup.py install`
+
+Please note the PyPI package `shapeways` is now owned by Shapeways and is not this project.
 
 Usage
 =====
