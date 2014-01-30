@@ -1,8 +1,8 @@
+Official Python bindings are available at https://github.com/Shapeways/python-shapeways.
+
 Installation
 =====
 To install from source use `python setup.py install`, this will install the `shapeways2` module.
-
-Please note the PyPI package `shapeways` (module name `shapeways` as well) is not this project.
 
 Usage
 =====
